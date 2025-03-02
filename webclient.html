@@ -1,0 +1,361 @@
+<body>
+    <h1>
+        Discord'nt Messager
+    </h1>
+
+    <input type="text" id="textbox" placeholder="Enter text here...">
+
+    <button id="Login" onclick="loginUser()">
+        Login 
+    </button>
+
+    <div id='error'><br></div>
+    <div id='fillHere'> <br> </div>
+
+
+<script>
+
+    //REMOVE AND CREATE LOGIN PAGE ELEMENTS
+
+    function createLoginPage() {
+
+        var fillHere = document.getElementById("fillHere");
+        
+        if (fillHere) 
+        {
+            fillHere.remove();
+        }
+        
+        var textbox = document.getElementById("textbox");
+        if (textbox) 
+        {
+            textbox.remove();
+        }
+
+        var sendButton = document.getElementById("Send");
+        if (sendButton) 
+        {
+            sendButton.remove();
+        }
+        
+        var logoutButton = document.getElementById("Logout");
+        if (logoutButton) 
+        {
+            logoutButton.remove();
+        }
+        
+        var errorDiv = document.getElementById("error");
+        if (errorDiv) 
+        {
+            errorDiv.remove();
+        }
+
+        var inputBox = document.createElement("input");
+        inputBox.type = "text";
+        inputBox.id = "textbox";
+        inputBox.placeholder = "type message here...";
+    
+        var loginButton = document.createElement("button");
+        loginButton.id = "Login";
+        loginButton.textContent = "Login";
+        loginButton.onclick = function() {
+            loginUser(); 
+        };
+    
+        var errorDiv = document.createElement("div");
+        errorDiv.id = "error";
+        errorDiv.innerHTML = "<br>";
+    
+        var messageDiv = document.createElement("div");
+        messageDiv.id = "fillHere";
+        messageDiv.innerHTML = "<br>";
+    
+        //ADDING ELEMENTS TO BODY
+        document.body.appendChild(inputBox);
+        document.body.appendChild(loginButton);
+        document.body.appendChild(errorDiv);
+        document.body.appendChild(messageDiv);
+    }
+    
+    //REMOVE AND CREATE ELEMENTS FOR MESSAGING PAGE
+
+    function createMessagePage()
+    {
+
+        document.getElementById("fillHere").remove();
+        document.getElementById("textbox").remove();
+        document.getElementById("Login").remove();
+        document.getElementById("error").remove();
+        
+
+        var paragraph = document.createElement("p");
+        paragraph.id="p";
+        paragraph.textContent = "What's on your mind?";
+
+        var inputBox = document.createElement("input");
+        inputBox.type = "text";
+        inputBox.id = "textbox";
+        inputBox.placeholder = "type message here...";
+
+        var sendButton = document.createElement("button");
+        sendButton.id = "Send";
+        sendButton.textContent = "Send";
+        sendButton.onclick = function() {
+            postMessage(); // Calls the postMessage function when clicked
+        };
+
+        // Create a "Log Out" <button> element
+        var logoutButton = document.createElement("button");
+        logoutButton.id = "Logout";
+        logoutButton.textContent = "Log Out";
+        logoutButton.onclick = function() {
+            logOut(); // Calls the logOut function when clicked
+        };
+
+        var messageDiv = document.createElement("div");
+        messageDiv.id = "fillHere";
+        messageDiv.innerHTML = "<br>";
+
+        var ErrorDiv = document.createElement("div");
+        ErrorDiv.id = "error";
+        ErrorDiv.innerHTML = "<br>";
+
+        document.body.appendChild(paragraph);
+        document.body.appendChild(inputBox);
+        document.body.appendChild(sendButton);
+        document.body.appendChild(logoutButton);
+        document.body.appendChild(ErrorDiv)
+        document.body.appendChild(messageDiv);
+
+    }
+
+    //LOG IN USERS BY AUTHENTICATING USERNAME
+
+    function loginUser()
+    {
+        const textboxValue = document.getElementById("textbox").value;
+        const checkIfSingleName = textboxValue.split(" ");
+
+        if (textboxValue.trim() !== "") {
+            if(checkIfSingleName.length==1)
+            {
+                var oReq = new XMLHttpRequest();
+                
+                oReq.open("POST", "/api/login/" + textboxValue.trim(), true);
+                oReq.withCredentials = true;
+
+                oReq.onload = function() {
+                    if (oReq.status === 200) {
+                        createMessagePage();
+                    } else {
+                        document.getElementById("fillHere").innerText = "Error: " + oReq.status;
+                    }
+                };
+                oReq.send();                
+
+                document.getElementById("fillHere").innerText = `\n ${textboxValue} has logged in`;
+            }
+
+            else
+            {
+                document.getElementById("fillHere").innerHTML = "<br>Must be single word";
+
+            }
+        } 
+        
+        else {
+            document.getElementById("fillHere").innerHTML = "<br>Username cannot be empty";
+        }
+    }   
+
+    msgsList=[];
+
+    //LOG OUT USER AND DISPLAY APPROPRIATE MESSAGE ON DIV
+
+    function logOut()
+    {
+        var oReq = new XMLHttpRequest();
+        oReq.open("DELETE", "/api/login/", true);
+        oReq.onload = function() {
+            if (oReq.status === 200) {
+
+                console.log("DELETEEE MD")
+                document.getElementById("fillHere").innerText = oReq.responseText;
+                createLoginPage()
+                
+            } 
+            
+            else {
+                document.getElementById("fillHere").innerText = "Error: " + oReq.status;
+            }
+        };
+
+        oReq.send();        
+    }
+
+    //CREATE TABLE TO DISPLAY MESSAGES 
+
+    function createTable(text)
+    {
+        const normalizedText = text.trim();
+        const lines = normalizedText.split('\n').map(line => line.trim())
+
+        const tableContainer = document.getElementById('fillHere');
+
+        let tableHTML = '<table>';
+        tableHTML += '<thead><tr><th>Username</th><th>Date</th><th>Time</th><th>Message</th></tr></thead>';
+        tableHTML += '<tbody>';
+
+        lines.forEach(line => {
+            // Match the format: Username Date Time: Message
+            const regex = /^(\S+)\s+(\d{4}-\d{2}-\d{2})\s+(\d{2}:\d{2}:\d{2}):\s+(.+)$/;
+            const match = line.match(regex);
+
+            if (match) 
+            {
+
+
+                const username = match[1];  
+                const date = match[2];     
+                const time = match[3];     
+                const message = match[4];  
+
+                tableHTML += `<tr>
+                    <td>${username}</td>
+                    <td>${date}</td>
+                    <td>${time}</td>
+                    <td>${message}</td>
+                </tr>`;
+            } 
+
+        });
+
+        tableHTML += '</tbody></table>';
+
+        tableContainer.innerHTML = tableHTML;
+
+        //EDIT STYLE PROPERTIES OF TABLE
+
+        const table = tableContainer.querySelector('table');
+        table.style.borderCollapse = 'collapse';
+        table.style.marginTop = '10px';
+
+
+        const thElements = tableContainer.querySelectorAll('th');
+
+        //EDIT STYLE OF TABLE HEADER ELEMENTS
+
+        thElements.forEach(th => {
+            th.style.padding = '10px';
+            th.style.border = '2px solid black';  
+            th.style.backgroundColor = '#FFFFFF';  
+            th.style.color = '#000000';
+            th.style.textAlign = 'center';
+            th.style.fontWeight = 'bold';
+        })        
+
+        const tdElements = tableContainer.querySelectorAll('td');
+
+        //EDIT STYLE OF TABLE CELL ELEMENTS
+
+        tdElements.forEach(td => {
+    
+            td.style.border = '2px solid black';  
+            td.style.backgroundColor = '#fff';  
+            td.style.textAlign = 'left';
+            td.style.padding='5px'
+        });
+    }
+
+    //SEND MESSAGE AS JSON
+
+    function postMessage()
+    {
+        const textboxValue = document.getElementById("textbox").value;
+
+        if (textboxValue.trim() !== "") {
+
+            message=textboxValue.trim();
+            msgsList.push(message);
+            document.getElementById("fillHere").innerText = message;
+
+            var oReq = new XMLHttpRequest();
+            
+
+            oReq.open("POST", "/api/messages", true);
+            oReq.withCredentials = true;
+            
+            oReq.onload = function() {
+                if (oReq.status === 200) 
+                {
+                    const getRequest = new XMLHttpRequest();
+
+                    getRequest.open("GET", "/api/messages", true);
+                    getRequest.withCredentials = true;
+
+                    getRequest.onload = function() {
+                        if (getRequest.status === 200) {
+                            createTable(getRequest.responseText); // Display messages in table
+                        } 
+                        
+                        else {
+                            document.getElementById("fillHere").innerText = "Error: " + getRequest.status;
+                        }
+                    };
+                    getRequest.send();
+                    
+                    
+                } 
+                
+                else {
+                    document.getElementById("fillHere").innerText = "Error: " + oReq.status;
+                }
+            };
+
+            oReq.send(JSON.stringify({
+
+                message: textboxValue
+            }));
+        } 
+        
+        else 
+        {
+            document.getElementById("fillHere").innerHTML = "<br>Message cannot be empty";
+        }
+
+    }
+
+    //GET MESSAGES BY POLLING
+
+    function fetchMessages()
+    {
+        var oReq = new XMLHttpRequest();
+            
+
+        oReq.open("GET", "/api/messages", true);
+        oReq.withCredentials = true;
+        
+        oReq.onload = function() 
+        {
+            if (oReq.status === 200) 
+            {   
+                createTable(oReq.responseText);
+            }
+
+            else 
+            {
+                document.getElementById("error").innerHTML = "<br>Log In to View and Send Messages" ;
+            }
+        }
+
+        oReq.send();
+
+
+    }
+
+    //ASK FOR MESSAGES EVERY 2 SECONDS
+    setInterval(fetchMessages, 2000);
+
+    
+</script>
+</body>
