@@ -1,6 +1,6 @@
 # Distributed Chat Server
 
-<cs.png>
+![Screenshot](cs.png)
 
 ## Overview
 
