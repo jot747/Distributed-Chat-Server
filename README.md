@@ -1,5 +1,7 @@
 # Distributed Chat Server
 
+<cs.png>
+
 ## Overview
 
 The Distributed Chat Server is a real-time messaging system built to handle multiple clients communicating with each other over a network. It follows a distributed architecture, allowing users to send and receive messages in a seamless, scalable environment. This server is designed to handle chat functionality, including message storage, user registration, and dynamic updates.
