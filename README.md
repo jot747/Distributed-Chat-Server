@@ -12,6 +12,7 @@ The Distributed Chat Server is a real-time messaging system built to handle mult
 - User registration and management
 - Scalable and fault-tolerant architecture
 - RESTful API for interacting with the server
+- Cookies and Session Management
 
 ## Architecture
 
